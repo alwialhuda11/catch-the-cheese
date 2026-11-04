@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Catch the Cheese</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #fdf3d8;
+        --bg-deep: #f7e3ac;
+        --ink: #3a2410;
+        --ink-soft: #7a5a30;
+        --card: #fffaf0;
+        --card-line: #e8cf96;
+        --cheese: #ffb703;
+        --cheese-deep: #f59e0b;
+        --cheese-dark: #d97706;
+        --gold: #ffd60a;
+        --accent: #e4572e;
+        --accent-deep: #c7431f;
+        --good: #2e9e4f;
+        --bad: #d64541;
+        --nap: #7c6cf0;
+        --stage-top: #ffe9a8;
+        --stage-bottom: #ffd166;
+        --stage-line: #e0aa3e;
+        --zone: rgba(46, 158, 79, 0.22);
+        --zone-line: #2e9e4f;
+        --shadow: 0 10px 24px rgba(122, 74, 10, 0.18);
+        --btn-shadow: 0 6px 0 var(--accent-deep), 0 14px 24px rgba(196, 67, 31, 0.35);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1d130a;
+          --bg-deep: #150d06;
+          --ink: #ffe9bd;
+          --ink-soft: #c9a15f;
+          --card: #2b1c0e;
+          --card-line: #4d3517;
+          --stage-top: #3a2708;
+          --stage-bottom: #54370c;
+          --stage-line: #7a5518;
+          --zone: rgba(74, 222, 128, 0.18);
+          --zone-line: #4ade80;
+          --shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+          --btn-shadow: 0 6px 0 var(--accent-deep), 0 14px 24px rgba(0, 0, 0, 0.5);
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: "Nunito", system-ui, sans-serif;
+        color: var(--ink);
+        background-color: var(--bg);
+        background-image:
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cg fill='%23d97706' fill-opacity='0.055'%3E%3Cg transform='translate(18 14)'%3E%3Cellipse cx='16' cy='22' rx='10' ry='8'/%3E%3Cellipse cx='3' cy='10' rx='3.6' ry='5'/%3E%3Cellipse cx='12' cy='5' rx='3.6' ry='5'/%3E%3Cellipse cx='21' cy='5' rx='3.6' ry='5'/%3E%3Cellipse cx='29' cy='10' rx='3.6' ry='5'/%3E%3C/g%3E%3Cg transform='translate(88 84) rotate(24)'%3E%3Cellipse cx='16' cy='22' rx='10' ry='8'/%3E%3Cellipse cx='3' cy='10' rx='3.6' ry='5'/%3E%3Cellipse cx='12' cy='5' rx='3.6' ry='5'/%3E%3Cellipse cx='21' cy='5' rx='3.6' ry='5'/%3E%3Cellipse cx='29' cy='10' rx='3.6' ry='5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+          radial-gradient(1100px 500px at 85% -10%, var(--bg-deep), transparent 60%);
+        background-size: 150px 150px, auto;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .wrap {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 16px 14px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      h1, h2 { font-family: "Fredoka", "Nunito", sans-serif; }
+
+      /* ---------- HUD ---------- */
+      .hud {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+      }
+      .stat {
+        background: var(--card);
+        border: 2px solid var(--card-line);
+        border-radius: 14px;
+        padding: 8px 10px 6px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+      .stat .label {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .stat .value {
+        font-family: "Fredoka", sans-serif;
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1.05;
+      }
+      .stat .value.small { font-size: 22px; padding-top: 5px; }
+      .timerbar {
+        height: 10px;
+        border-radius: 99px;
+        background: var(--card);
+        border: 2px solid var(--card-line);
+        overflow: hidden;
+      }
+      .timerbar > div {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--cheese), var(--accent));
+        border-radius: 99px;
+        transition: width 0.2s linear;
+      }
+      .timerbar.low > div { background: var(--bad); }
+
+      /* ---------- Live wheel panel ---------- */
+      .wheel-card {
+        background: var(--card);
+        border: 2px solid var(--card-line);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .wheel-top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .wheel-svg { flex: 0 0 auto; width: 108px; height: 108px; }
+      .wheel-svg.munch { animation: munch 0.38s ease; }
+      @keyframes munch {
+        0% { transform: scale(1); }
+        30% { transform: scale(1.07) rotate(-2deg); }
+        60% { transform: scale(0.97); }
+        100% { transform: scale(1); }
+      }
+      .wheel-rotor { transform-origin: 60px 56px; }
+      .wheel-info { flex: 1 1 auto; min-width: 0; }
+      .hamster-name {
+        font-family: "Fredoka", sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--cheese-dark);
+        margin-bottom: 1px;
+      }
+      .rpm-row {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .rpm-num {
+        font-family: "Fredoka", sans-serif;
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .rpm-unit { font-weight: 800; color: var(--ink-soft); font-size: 13px; letter-spacing: 0.08em; }
+      .feed-line {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        margin-top: 3px;
+      }
+      .dot {
+        flex: 0 0 auto;
+        width: 9px; height: 9px; border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 0 0 rgba(46, 158, 79, 0.5);
+        animation: pulse 1.6s infinite;
+      }
+      .dot.off { background: var(--bad); animation: none; box-shadow: none; }
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(46, 158, 79, 0.45); }
+        70% { box-shadow: 0 0 0 7px rgba(46, 158, 79, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(46, 158, 79, 0); }
+      }
+      .practice-chip {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #fff;
+        background: var(--bad);
+        border-radius: 99px;
+        padding: 3px 10px;
+      }
+      .status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .mini-stat {
+        border: 2px solid var(--card-line);
+        border-radius: 10px;
+        padding: 5px 10px 6px;
+        display: flex;
+        flex-direction: column;
+      }
+      .mini-stat span {
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+      .mini-stat strong {
+        font-family: "Fredoka", sans-serif;
+        font-size: 17px;
+        font-weight: 600;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+      }
+      .mv-nap { color: var(--nap); }
+      .mv-jog { color: var(--good); }
+      .mv-zoom { color: var(--accent); }
+      .pass-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 14px;
+      }
+      .pass-label {
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        white-space: nowrap;
+      }
+      .pass-num {
+        font-family: "Fredoka", sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        line-height: 1.1;
+        display: inline-block;
+      }
+      .pass-num.pulse { animation: passPulse 0.4s ease; }
+      @keyframes passPulse {
+        0% { transform: scale(1); color: var(--ink); }
+        40% { transform: scale(1.22); color: var(--cheese-dark); }
+        100% { transform: scale(1); }
+      }
+      .charge-wrap { flex: 1 1 auto; min-width: 0; }
+      .charge-label {
+        font-size: 11.5px;
+        font-weight: 800;
+        color: var(--ink-soft);
+        margin-bottom: 3px;
+      }
+      .chargebar {
+        height: 12px;
+        border-radius: 99px;
+        background: var(--bg-deep);
+        border: 2px solid var(--card-line);
+        overflow: hidden;
+      }
+      .chargebar > div {
+        height: 100%;
+        width: 0%;
+        background: repeating-linear-gradient(
+          -45deg,
+          var(--cheese) 0 10px,
+          var(--cheese-deep) 10px 20px
+        );
+        transition: width 0.15s linear;
+      }
+      .effect-line {
+        margin: 0;
+        font-size: 13.5px;
+        font-weight: 700;
+        line-height: 1.45;
+        border-top: 2px dashed var(--card-line);
+        padding-top: 9px;
+      }
+      .effect-line strong { font-family: "Fredoka", sans-serif; font-weight: 600; }
+      .meter-block { border-top: 2px dashed var(--card-line); padding-top: 9px; }
+      .meter-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .meter-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Fredoka", sans-serif;
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .meter-state { font-size: 12.5px; font-weight: 800; color: var(--ink-soft); }
+      .meterbar {
+        height: 16px;
+        border-radius: 99px;
+        background: var(--bg-deep);
+        border: 2px solid var(--card-line);
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      .meterbar > div {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--cheese), var(--gold));
+        transition: width 0.35s ease;
+      }
+      .meterbar.bump { animation: meterBump 0.35s ease; }
+      .meterbar.dent { animation: meterDent 0.35s ease; }
+      @keyframes meterBump {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.025); }
+        100% { transform: scale(1); }
+      }
+      @keyframes meterDent {
+        0% { transform: translateX(0); }
+        30% { transform: translateX(-4px); }
+        70% { transform: translateX(4px); }
+        100% { transform: translateX(0); }
+      }
+      .meter-note {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        margin-top: 3px;
+      }
+
+      /* ---------- Stage decorations ---------- */
+      .stage-wheel {
+        position: absolute;
+        top: -84px;
+        right: -84px;
+        width: 250px;
+        height: 250px;
+        opacity: 0.09;
+        pointer-events: none;
+        will-change: transform;
+      }
+      .paw-trail {
+        position: absolute;
+        left: 10px;
+        top: 92px;
+        width: 44px;
+        opacity: 0.13;
+        pointer-events: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .dot, .wheel-svg.munch, .pass-num.pulse, .meterbar.bump, .meterbar.dent { animation: none; }
+      }
+
+      /* ---------- Stage ---------- */
+      .stage {
+        position: relative;
+        height: min(56vh, 540px);
+        min-height: 400px;
+        border-radius: 20px;
+        border: 3px solid var(--stage-line);
+        background: linear-gradient(180deg, var(--stage-top), var(--stage-bottom));
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: pointer;
+      }
+      .stage.flash-good { animation: flashGood 0.25s; }
+      .stage.flash-bad { animation: flashBad 0.25s; }
+      @keyframes flashGood {
+        0% { box-shadow: inset 0 0 0 6px var(--good), var(--shadow); }
+        100% { box-shadow: inset 0 0 0 0 transparent, var(--shadow); }
+      }
+      @keyframes flashBad {
+        0% { box-shadow: inset 0 0 0 6px var(--bad), var(--shadow); }
+        100% { box-shadow: inset 0 0 0 0 transparent, var(--shadow); }
+      }
+      .stage.shake { animation: shake 0.3s; }
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-6px); }
+        75% { transform: translateX(6px); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .stage.shake, .stage.flash-good, .stage.flash-bad { animation: none; }
+      }
+
+      .chute-lines {
+        position: absolute; inset: 0;
+        background: repeating-linear-gradient(
+          180deg,
+          transparent 0 46px,
+          rgba(122, 74, 10, 0.07) 46px 48px
+        );
+        pointer-events: none;
+      }
+      .speed-lines {
+        position: absolute; inset: 0;
+        opacity: 0;
+        background: repeating-linear-gradient(
+          90deg,
+          transparent 0 34px,
+          rgba(255, 255, 255, 0.35) 34px 36px
+        );
+        transition: opacity 0.4s;
+        pointer-events: none;
+      }
+      .chute {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 176px;
+        z-index: 3;
+        pointer-events: none;
+        filter: drop-shadow(0 4px 4px rgba(90, 50, 0, 0.25));
+      }
+      .chute.drop { animation: chuteDrop 0.3s ease; }
+      @keyframes chuteDrop {
+        0% { transform: translateX(-50%) translateY(0); }
+        40% { transform: translateX(-50%) translateY(4px); }
+        100% { transform: translateX(-50%) translateY(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .chute.drop { animation: none; }
+      }
+      .chute-label {
+        position: absolute;
+        top: 42px;
+        left: 0; right: 0;
+        text-align: center;
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.18em;
+        color: var(--ink-soft);
+      }
+      .drop-note {
+        position: absolute;
+        top: 58px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: "Fredoka", sans-serif;
+        font-weight: 600;
+        font-size: 13.5px;
+        color: var(--cheese-dark);
+        background: color-mix(in srgb, var(--card) 88%, transparent);
+        border: 2px solid var(--card-line);
+        border-radius: 99px;
+        padding: 2px 12px;
+        white-space: nowrap;
+        pointer-events: none;
+        animation: dropNote 1s ease-out forwards;
+        z-index: 4;
+      }
+      @keyframes dropNote {
+        0% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+        15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        75% { opacity: 1; }
+        100% { opacity: 0; transform: translateX(-50%) translateY(6px); }
+      }
+
+      .zone {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 64px;
+        width: 190px;
+        height: 74px;
+        border: 3px dashed var(--zone-line);
+        border-radius: 14px;
+        background: var(--zone);
+        pointer-events: none;
+      }
+      .zone .zone-label {
+        position: absolute;
+        top: -22px; left: 0; right: 0;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        color: var(--zone-line);
+      }
+      .basket {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 8px;
+        width: 170px;
+        pointer-events: none;
+        filter: drop-shadow(0 6px 6px rgba(90, 50, 0, 0.3));
+      }
+      .cheese {
+        position: absolute;
+        width: 58px;
+        height: 50px;
+        margin-left: -29px;
+        pointer-events: none;
+        filter: drop-shadow(0 4px 4px rgba(90, 50, 0, 0.35));
+        will-change: top, transform;
+        z-index: 2;
+      }
+      .cheese.golden { filter: drop-shadow(0 0 10px rgba(255, 214, 10, 0.85)) drop-shadow(0 4px 4px rgba(90, 50, 0, 0.3)); }
+      .splat {
+        position: absolute;
+        width: 74px;
+        margin-left: -37px;
+        pointer-events: none;
+        opacity: 0.95;
+      }
+      .floater {
+        position: absolute;
+        font-family: "Fredoka", sans-serif;
+        font-weight: 700;
+        font-size: 26px;
+        color: var(--good);
+        text-shadow: 0 2px 0 rgba(255, 255, 255, 0.65);
+        pointer-events: none;
+        animation: floatUp 0.85s ease-out forwards;
+        white-space: nowrap;
+        z-index: 4;
+      }
+      .floater.perfect { color: var(--cheese-dark); font-size: 30px; }
+      .floater.golden { color: var(--cheese-dark); }
+      .floater.miss { color: var(--bad); font-size: 22px; }
+      @keyframes floatUp {
+        0% { transform: translateY(0) scale(0.8); opacity: 0; }
+        15% { transform: translateY(-8px) scale(1.1); opacity: 1; }
+        100% { transform: translateY(-64px) scale(1); opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .floater { animation-duration: 0.01s; }
+        .drop-note { animation-duration: 0.01s; }
+      }
+      .fly-cheese {
+        position: fixed;
+        z-index: 60;
+        pointer-events: none;
+        transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.4, 1), opacity 0.55s ease;
+        filter: drop-shadow(0 3px 3px rgba(90, 50, 0, 0.35));
+      }
+
+      /* ---------- Overlays ---------- */
+      .overlay {
+        position: absolute; inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-align: center;
+        padding: 24px;
+        overflow-y: auto;
+        background: color-mix(in srgb, var(--card) 88%, transparent);
+        backdrop-filter: blur(3px);
+        z-index: 5;
+      }
+      @media (max-width: 480px) {
+        .overlay { padding: 14px 16px; gap: 7px; justify-content: flex-start; }
+        .overlay h2 { font-size: 26px; }
+        .overlay p { font-size: 13.5px; line-height: 1.4; }
+        .overlay .big-score { font-size: 44px; }
+        .btn-start { font-size: 18px; padding: 11px 24px; margin-top: 2px; }
+      }
+      .overlay[hidden] { display: none; }
+      .overlay h2 {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 700;
+      }
+      .overlay p {
+        margin: 0;
+        max-width: 430px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        line-height: 1.45;
+      }
+      .overlay p strong { color: var(--ink); }
+      .overlay .big-score {
+        font-family: "Fredoka", sans-serif;
+        font-size: 58px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--cheese-dark);
+      }
+      .result-grid {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        gap: 6px 22px;
+        font-weight: 800;
+      }
+      .result-grid .k { color: var(--ink-soft); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
+      .result-grid .v { font-family: "Fredoka", sans-serif; font-size: 24px; }
+      .loop-line {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--ink-soft);
+      }
+
+      .btn {
+        font-family: "Fredoka", sans-serif;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        color: #fff;
+        background: var(--accent);
+        border-radius: 16px;
+        box-shadow: var(--btn-shadow);
+        transition: transform 0.06s, box-shadow 0.06s, filter 0.15s;
+      }
+      .btn:hover { filter: brightness(1.05); }
+      .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--accent-deep); }
+      .btn:focus-visible { outline: 3px solid var(--cheese-dark); outline-offset: 3px; }
+      .btn-start { font-size: 21px; padding: 13px 30px; margin-top: 6px; }
+      .btn-catch {
+        width: 100%;
+        font-size: 26px;
+        letter-spacing: 0.04em;
+        padding: 16px;
+        border-radius: 18px;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .btn-catch:disabled { filter: grayscale(0.5) brightness(0.92); cursor: default; }
+      .hint {
+        text-align: center;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--ink-soft);
+        margin: 0;
+      }
+      .hint kbd {
+        font-family: inherit;
+        background: var(--card);
+        border: 2px solid var(--card-line);
+        border-bottom-width: 3px;
+        border-radius: 6px;
+        padding: 0 6px;
+      }
+      footer {
+        text-align: center;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink-soft);
+      }
+      footer a { color: inherit; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- HUD -->
+      <div class="hud" aria-live="off">
+        <div class="stat">
+          <div class="label">Score</div>
+          <div class="value" id="score">0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Time</div>
+          <div class="value" id="time">60.0</div>
+        </div>
+        <div class="stat">
+          <div class="label">Streak</div>
+          <div class="value small" id="streak">—</div>
+        </div>
+      </div>
+      <div class="timerbar" id="timerbar"><div id="timerfill"></div></div>
+
+      <!-- Live wheel panel: the whole loop lives here -->
+      <section class="wheel-card" aria-label="Live hamster wheel panel">
+        <div class="wheel-top">
+          <svg class="wheel-svg" id="wheelSvg" viewBox="0 0 120 120" aria-hidden="true">
+            <!-- stand -->
+            <g stroke="var(--ink-soft)" stroke-width="4" stroke-linecap="round" opacity="0.55">
+              <line x1="60" y1="62" x2="38" y2="106" />
+              <line x1="60" y1="62" x2="82" y2="106" />
+              <line x1="28" y1="108" x2="92" y2="108" />
+            </g>
+            <g class="wheel-rotor" id="rotor">
+              <circle cx="60" cy="56" r="50" fill="none" stroke="var(--cheese-deep)" stroke-width="6" />
+              <circle cx="60" cy="56" r="41" fill="none" stroke="var(--cheese-deep)" stroke-width="1.6" opacity="0.55" />
+              <g stroke="var(--cheese-deep)" stroke-width="4.5" stroke-linecap="round">
+                <line x1="60" y1="56" x2="110" y2="56" />
+                <line x1="60" y1="56" x2="85" y2="99" />
+                <line x1="60" y1="56" x2="35" y2="99" />
+                <line x1="60" y1="56" x2="10" y2="56" />
+                <line x1="60" y1="56" x2="35" y2="13" />
+                <line x1="60" y1="56" x2="85" y2="13" />
+              </g>
+              <circle cx="110" cy="56" r="6.5" fill="var(--accent)" />
+              <circle cx="60" cy="56" r="7.5" fill="var(--cheese-dark)" />
+            </g>
+            <!-- Squeektoshi, running -->
+            <g id="hamsterRun">
+              <g id="speedMarks" stroke="var(--ink-soft)" stroke-width="2.4" stroke-linecap="round" opacity="0" >
+                <line x1="4" y1="72" x2="16" y2="72" />
+                <line x1="1" y1="82" x2="15" y2="82" />
+                <line x1="5" y1="92" x2="16" y2="92" />
+              </g>
+              <circle cx="33" cy="84" r="4" fill="#f7e3c0" />
+              <ellipse cx="55" cy="84" rx="19" ry="12.5" fill="#d99e5f" />
+              <ellipse cx="58" cy="88" rx="12" ry="8" fill="#f7e3c0" />
+              <ellipse cx="43" cy="98" rx="5" ry="3" fill="#b97e3e" />
+              <ellipse cx="63" cy="99" rx="5" ry="3" fill="#b97e3e" />
+              <circle cx="55" cy="64" r="4.6" fill="#d99e5f" />
+              <circle cx="55" cy="64" r="2.2" fill="#f2a7bb" />
+              <circle cx="72" cy="72" r="11" fill="#d99e5f" />
+              <ellipse cx="77" cy="77" rx="6" ry="4.6" fill="#f7e3c0" />
+              <ellipse id="cheek" cx="67.5" cy="79" rx="1.6" ry="1.2" fill="#f2a7bb" opacity="0.9" />
+              <circle cx="74" cy="69" r="1.9" fill="#3a2410" />
+              <circle cx="82.5" cy="74" r="2" fill="#e2607f" />
+              <path id="hamsterSmile" d="M75 80.5 q3.5 2.6 7 0" fill="none" stroke="#3a2410" stroke-width="1.5" stroke-linecap="round" opacity="0" />
+              <g stroke="#b97e3e" stroke-width="1" stroke-linecap="round">
+                <line x1="80" y1="76" x2="90" y2="74" />
+                <line x1="80" y1="78" x2="90" y2="79" />
+              </g>
+              <polygon points="66,82 78,82 72,90" fill="#ffb703" stroke="#d97706" stroke-width="1.4" stroke-linejoin="round" />
+            </g>
+            <!-- Squeektoshi, napping -->
+            <g id="hamsterNap" style="display:none">
+              <ellipse cx="58" cy="90" rx="21" ry="10.5" fill="#d99e5f" />
+              <ellipse cx="60" cy="93" rx="13" ry="6.5" fill="#f7e3c0" />
+              <circle cx="76" cy="84" r="8" fill="#d99e5f" />
+              <circle cx="72" cy="77" r="3.8" fill="#d99e5f" />
+              <circle cx="72" cy="77" r="1.8" fill="#f2a7bb" />
+              <path d="M71 85 q3.5 2.5 7 0" fill="none" stroke="#3a2410" stroke-width="1.6" stroke-linecap="round" />
+              <circle cx="38" cy="88" r="3.6" fill="#f7e3c0" />
+            </g>
+            <g id="zzz" opacity="0">
+              <text x="84" y="34" font-size="14" font-weight="700" fill="#7c6cf0" font-family="Fredoka, sans-serif">z</text>
+              <text x="93" y="22" font-size="19" font-weight="700" fill="#7c6cf0" font-family="Fredoka, sans-serif">Z</text>
+            </g>
+          </svg>
+          <div class="wheel-info">
+            <div class="hamster-name">Squeektoshi · WHEELY9000</div>
+            <div class="rpm-row">
+              <span class="rpm-num" id="rpmNum">0</span>
+              <span class="rpm-unit">WHEEL RPM</span>
+            </div>
+            <div class="feed-line">
+              <span class="dot" id="feedDot"></span>
+              <span id="feedText">Connecting to the live wheel…</span>
+            </div>
+            <span class="practice-chip" id="practiceChip" hidden>Practice pace — simulated, not live</span>
+          </div>
+        </div>
+
+        <div class="status-grid">
+          <div class="mini-stat">
+            <span>Wheel status</span>
+            <strong id="wheelStatus">—</strong>
+          </div>
+          <div class="mini-stat">
+            <span>Mode</span>
+            <strong id="modeLabel" class="mv-nap">Nap</strong>
+          </div>
+        </div>
+
+        <div class="pass-row">
+          <div>
+            <div class="pass-label">Wheel passes<span id="passSim" hidden> (simulated)</span></div>
+            <span class="pass-num" id="passNum">0</span>
+          </div>
+          <div class="charge-wrap">
+            <div class="charge-label" id="chargeLabel">Next drop · charged by wheel passes</div>
+            <div class="chargebar"><div id="chargeFill"></div></div>
+          </div>
+        </div>
+
+        <p class="effect-line" id="effectLine">Waiting for the wheel…</p>
+
+        <div class="meter-block">
+          <div class="meter-head">
+            <span class="meter-title">
+              <svg viewBox="0 0 58 50" width="20" height="17" aria-hidden="true"><path d="M4 42 L54 42 L29 6 Q27 3 24 6 L4 36 Q2 42 4 42 Z" fill="#ffb703" stroke="#d97706" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="32" r="5" fill="#f59e0b"/><circle cx="38" cy="38" r="3.6" fill="#f59e0b"/></svg>
+              Squeektoshi's snack meter
+            </span>
+            <span class="meter-state" id="snackState">Waiting for snacks · 0%</span>
+          </div>
+          <div class="meterbar" id="snackBar"><div id="snackFill"></div></div>
+          <div class="meter-note">Fed by every catch — in this game only. Snacks here don't feed or affect the real hamster.</div>
+        </div>
+      </section>
+
+      <!-- Stage -->
+      <div class="stage" id="stage" role="application" aria-label="Game area. Tap or press space when the cheese is inside the basket zone.">
+        <div class="chute-lines"></div>
+        <svg class="stage-wheel" id="stageWheel" viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#d97706" stroke-width="4" />
+          <g stroke="#d97706" stroke-width="3.4" stroke-linecap="round">
+            <line x1="50" y1="50" x2="96" y2="50" />
+            <line x1="50" y1="50" x2="73" y2="90" />
+            <line x1="50" y1="50" x2="27" y2="90" />
+            <line x1="50" y1="50" x2="4" y2="50" />
+            <line x1="50" y1="50" x2="27" y2="10" />
+            <line x1="50" y1="50" x2="73" y2="10" />
+          </g>
+          <circle cx="50" cy="50" r="7" fill="#d97706" />
+        </svg>
+        <svg class="paw-trail" viewBox="0 0 44 300" aria-hidden="true">
+          <g fill="#7c4a16">
+            <g transform="translate(4 6) rotate(-14)"><ellipse cx="16" cy="22" rx="10" ry="8" /><ellipse cx="3" cy="10" rx="3.6" ry="5" /><ellipse cx="12" cy="5" rx="3.6" ry="5" /><ellipse cx="21" cy="5" rx="3.6" ry="5" /><ellipse cx="29" cy="10" rx="3.6" ry="5" /></g>
+            <g transform="translate(9 74) rotate(11)"><ellipse cx="16" cy="22" rx="10" ry="8" /><ellipse cx="3" cy="10" rx="3.6" ry="5" /><ellipse cx="12" cy="5" rx="3.6" ry="5" /><ellipse cx="21" cy="5" rx="3.6" ry="5" /><ellipse cx="29" cy="10" rx="3.6" ry="5" /></g>
+            <g transform="translate(3 142) rotate(-9)"><ellipse cx="16" cy="22" rx="10" ry="8" /><ellipse cx="3" cy="10" rx="3.6" ry="5" /><ellipse cx="12" cy="5" rx="3.6" ry="5" /><ellipse cx="21" cy="5" rx="3.6" ry="5" /><ellipse cx="29" cy="10" rx="3.6" ry="5" /></g>
+            <g transform="translate(10 210) rotate(14)"><ellipse cx="16" cy="22" rx="10" ry="8" /><ellipse cx="3" cy="10" rx="3.6" ry="5" /><ellipse cx="12" cy="5" rx="3.6" ry="5" /><ellipse cx="21" cy="5" rx="3.6" ry="5" /><ellipse cx="29" cy="10" rx="3.6" ry="5" /></g>
+          </g>
+        </svg>
+        <div class="speed-lines" id="speedLines"></div>
+
+        <div class="chute" id="chute" aria-hidden="true">
+          <svg viewBox="0 0 176 40" width="176" height="40">
+            <rect x="68" y="0" width="40" height="10" fill="#b06f2e" />
+            <path d="M22 10 L154 10 L102 36 L74 36 Z" fill="#c97e33" stroke="#7c4a16" stroke-width="2.5" stroke-linejoin="round" />
+            <rect x="14" y="5" width="148" height="8" rx="4" fill="#8a551f" />
+            <circle cx="88" cy="24" r="4" fill="#ffb703" stroke="#7c4a16" stroke-width="1.6" />
+          </svg>
+          <div class="chute-label">WHEEL-POWERED CHUTE</div>
+        </div>
+
+        <div class="zone" id="zone"><div class="zone-label">CATCH ZONE</div></div>
+        <svg class="basket" id="basket" viewBox="0 0 170 62" aria-hidden="true">
+          <path d="M6 10 L26 56 Q28 60 34 60 L136 60 Q142 60 144 56 L164 10 Z" fill="#b06f2e" />
+          <path d="M6 10 L26 56 Q28 60 34 60 L136 60 Q142 60 144 56 L164 10 Z" fill="none" stroke="#7c4a16" stroke-width="3" />
+          <g stroke="#7c4a16" stroke-width="2.4" opacity="0.75">
+            <line x1="16" y1="26" x2="154" y2="26" />
+            <line x1="21" y1="42" x2="149" y2="42" />
+            <line x1="52" y1="10" x2="62" y2="60" />
+            <line x1="85" y1="10" x2="85" y2="60" />
+            <line x1="118" y1="10" x2="108" y2="60" />
+          </g>
+          <rect x="0" y="2" width="170" height="11" rx="5.5" fill="#8a551f" />
+        </svg>
+        <div id="fx"></div>
+
+        <div class="overlay" id="startOverlay">
+          <h2>Catch the Cheese</h2>
+          <p>
+            <strong>One loop, powered by a real hamster.</strong> Squeektoshi runs the
+            WHEELY9000 wheel, and the wheel powers the cheese chute: every wheel pass
+            charges the next drop you see in the panel above. Catch a wedge in the
+            basket zone and it flies straight to Squeektoshi as a snack, filling his
+            snack meter. A missed wedge breaks your streak and drains the meter.
+          </p>
+          <p>
+            The wheel sets the mode live: <strong>Nap</strong> (wheel stopped — slow,
+            drifting cheese), <strong>Jog</strong> (steady wheel — normal cheese), and
+            <strong>Zoomies</strong> (fast wheel — golden bonus cheese worth double).
+            You have 60 seconds. Feeding Squeektoshi happens <strong>inside this game
+            only</strong> — it doesn't feed or affect the real hamster.
+          </p>
+          <button class="btn btn-start" id="startBtn">Start 60-second round</button>
+        </div>
+
+        <div class="overlay" id="endOverlay" hidden>
+          <h2>Time's up!</h2>
+          <div class="big-score" id="finalScore">0</div>
+          <div class="result-grid">
+            <div><div class="k">Caught</div><div class="v" id="finalCaught">0</div></div>
+            <div><div class="k">Perfect</div><div class="v" id="finalPerfect">0</div></div>
+            <div><div class="k">Best streak</div><div class="v" id="finalStreak">0</div></div>
+          </div>
+          <div class="loop-line" id="finalLoop"></div>
+          <p id="finalNote"></p>
+          <button class="btn btn-start" id="againBtn">Play again</button>
+        </div>
+      </div>
+
+      <button class="btn btn-catch" id="catchBtn" disabled>CATCH!</button>
+      <p class="hint">Tap the stage, press <kbd>Space</kbd>, or hit CATCH — one button is all you get.</p>
+
+      <footer>
+        One loop: wheel → chute → basket → Squeektoshi's snack meter (in-game) ·
+        Wheel data: Squeekchain live API ·
+        <a href="https://docs.squeekchain.com/developers/api/" target="_blank" rel="noopener">API docs</a>
+      </footer>
+    </div>
+
+    <script>
+      "use strict";
+
+      var API_URL = "https://api.squeekchain.com/v1/status";
+      var ROUND_SECONDS = 60;
+      var NAP_TRICKLE_SECONDS = 5.5; // stored chute power: one drop charge per ~5.5s while the wheel is stopped
+      var METER_LOSS = 12;           // snack meter lost per dropped wedge
+
+      var stage = document.getElementById("stage");
+      var fx = document.getElementById("fx");
+      var chute = document.getElementById("chute");
+      var basket = document.getElementById("basket");
+      var rotor = document.getElementById("rotor");
+      var zzz = document.getElementById("zzz");
+      var hamster = document.getElementById("hamsterRun");
+      var hamsterNap = document.getElementById("hamsterNap");
+      var speedMarks = document.getElementById("speedMarks");
+      var cheek = document.getElementById("cheek");
+      var smile = document.getElementById("hamsterSmile");
+      var wheelSvg = document.getElementById("wheelSvg");
+      var stageWheel = document.getElementById("stageWheel");
+      var speedLines = document.getElementById("speedLines");
+      var scoreEl = document.getElementById("score");
+      var timeEl = document.getElementById("time");
+      var streakEl = document.getElementById("streak");
+      var timerbar = document.getElementById("timerbar");
+      var timerfill = document.getElementById("timerfill");
+      var rpmNum = document.getElementById("rpmNum");
+      var feedDot = document.getElementById("feedDot");
+      var feedText = document.getElementById("feedText");
+      var practiceChip = document.getElementById("practiceChip");
+      var wheelStatusEl = document.getElementById("wheelStatus");
+      var modeLabelEl = document.getElementById("modeLabel");
+      var passNum = document.getElementById("passNum");
+      var passSim = document.getElementById("passSim");
+      var chargeLabel = document.getElementById("chargeLabel");
+      var chargeFill = document.getElementById("chargeFill");
+      var effectLine = document.getElementById("effectLine");
+      var snackBar = document.getElementById("snackBar");
+      var snackFill = document.getElementById("snackFill");
+      var snackState = document.getElementById("snackState");
+      var startOverlay = document.getElementById("startOverlay");
+      var endOverlay = document.getElementById("endOverlay");
+      var startBtn = document.getElementById("startBtn");
+      var againBtn = document.getElementById("againBtn");
+      var catchBtn = document.getElementById("catchBtn");
+      var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      function cheeseSVG(size, golden) {
+        var fill = golden ? "#ffd60a" : "#ffb703";
+        var hole = golden ? "#f5b301" : "#f59e0b";
+        var spark = golden
+          ? '<path d="M12 12 l1.8 3.6 3.6 1.8 -3.6 1.8 -1.8 3.6 -1.8 -3.6 -3.6 -1.8 3.6 -1.8 Z" fill="#fff6bf"/>' +
+            '<path d="M45 8 l1.3 2.6 2.6 1.3 -2.6 1.3 -1.3 2.6 -1.3 -2.6 -2.6 -1.3 2.6 -1.3 Z" fill="#fff6bf"/>'
+          : "";
+        return (
+          '<svg viewBox="0 0 58 50" width="' + size + '" height="' + Math.round(size * 50 / 58) + '" aria-hidden="true">' +
+          '<path d="M4 42 L54 42 L29 6 Q27 3 24 6 L4 36 Q2 42 4 42 Z" fill="' + fill + '" stroke="#d97706" stroke-width="2.5" stroke-linejoin="round"/>' +
+          '<circle cx="24" cy="32" r="5" fill="' + hole + '"/>' +
+          '<circle cx="38" cy="38" r="3.6" fill="' + hole + '"/>' +
+          '<circle cx="29" cy="20" r="3" fill="' + hole + '"/>' +
+          spark +
+          "</svg>"
+        );
+      }
+      var SPLAT_SVG =
+        '<svg viewBox="0 0 74 22" width="74" height="22" aria-hidden="true">' +
+        '<ellipse cx="37" cy="13" rx="34" ry="7" fill="#f59e0b" opacity="0.85"/>' +
+        '<ellipse cx="20" cy="9" rx="8" ry="4" fill="#ffb703"/>' +
+        '<ellipse cx="55" cy="8" rx="6" ry="3.4" fill="#ffb703"/>' +
+        "</svg>";
+
+      /* ---------- Live wheel feed ---------- */
+      var feed = {
+        ok: false,
+        fresh: false,
+        rpmTarget: 0,      // real RPM from the API (or practice wander when offline)
+        rpm: 0,            // smoothed RPM actually used by the game
+        coreStatus: "",
+        practice: false,
+        practiceT: 0
+      };
+
+      function pollFeed() {
+        fetch(API_URL, { cache: "no-store" })
+          .then(function (r) {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return r.json();
+          })
+          .then(function (data) {
+            var m = data && data.measurement ? data.measurement : {};
+            var rpm = typeof m.rpmMilli === "number" ? m.rpmMilli / 1000 : 0;
+            feed.ok = true;
+            feed.practice = false;
+            feed.coreStatus = m.coreStatus || "";
+            feed.fresh = m.freshness === "online";
+            feed.rpmTarget = feed.fresh ? rpm : 0;
+            feedDot.classList.remove("off");
+            feedText.textContent = feed.fresh
+              ? "Live from the WHEELY9000 · Squeekchain testnet"
+              : "Wheel feed stale — treating the wheel as stopped";
+          })
+          .catch(function () {
+            feed.ok = false;
+            feed.fresh = false;
+            feed.practice = true;
+            feed.coreStatus = "";
+            feedDot.classList.add("off");
+            feedText.textContent = "Live feed unreachable — practice pace (simulated RPM)";
+          });
+      }
+      pollFeed();
+      setInterval(pollFeed, 2000);
+
+      function practiceRpm(t) {
+        // Slow wander through nap / jog / zoomies so practice mode still breathes.
+        var s = Math.sin(t * 0.11) + Math.sin(t * 0.043 + 1.7);
+        var v = 34 + 30 * s; // roughly 0..94, dips to naps
+        return Math.max(0, v);
+      }
+
+      function modeFor(rpm) {
+        if (rpm < 1) return "nap";
+        if (rpm < 40) return "jog";
+        return "zoom";
+      }
+      var MODE_META = {
+        nap: { label: "Nap", cls: "mv-nap" },
+        jog: { label: "Jog", cls: "mv-jog" },
+        zoom: { label: "Zoomies", cls: "mv-zoom" }
+      };
+      // Wheel passes the chute must bank before it can drop one wedge, per mode.
+      function dropCost(mode) {
+        if (mode === "zoom") return 1.0;
+        if (mode === "jog") return 1.2;
+        return 1.0; // nap runs on the stored-power trickle instead
+      }
+      function effectText(mode) {
+        if (mode === "nap")
+          return "<strong>Nap:</strong> the wheel is stopped, so no new passes are banked — the chute trickles on stored power and cheese drifts down slowly. Easy catches, snack-sized points.";
+        if (mode === "jog")
+          return "<strong>Jog:</strong> the turning wheel banks passes and charges the chute — normal cheese at a steady pace and normal points.";
+        return "<strong>Zoomies:</strong> the wheel is flying, passes bank fast and drops come thick and fast — every wedge is golden bonus cheese, worth double points.";
+      }
+
+      // Fall speed (px/s) from RPM: a nap is a gentle drift, zoomies are a blur.
+      function fallSpeed(rpm) {
+        return 130 + rpm * 7.5;
+      }
+
+      /* ---------- Sound (tiny synth, created on first tap) ---------- */
+      var audioCtx = null;
+      function beep(freq, dur, type, vol, when) {
+        try {
+          if (!audioCtx) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return;
+            audioCtx = new AC();
+          }
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          var t0 = audioCtx.currentTime + (when || 0);
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.type = type || "sine";
+          osc.frequency.setValueAtTime(freq, t0);
+          gain.gain.setValueAtTime(vol || 0.12, t0);
+          gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t0);
+          osc.stop(t0 + dur + 0.02);
+        } catch (e) { /* sound is a bonus, never a blocker */ }
+      }
+      function sndCatch(perfect, golden) {
+        beep(660, 0.09, "triangle", 0.14, 0);
+        beep(880, 0.12, "triangle", 0.14, 0.07);
+        if (perfect) beep(1320, 0.16, "triangle", 0.12, 0.14);
+        if (golden) beep(1560, 0.18, "triangle", 0.1, 0.2);
+      }
+      function sndMiss() {
+        beep(160, 0.18, "sawtooth", 0.07, 0);
+      }
+      function sndDrop() {
+        beep(420, 0.07, "square", 0.05, 0);
+      }
+
+      /* ---------- Game state ---------- */
+      var game = {
+        playing: false,
+        timeLeft: ROUND_SECONDS,
+        score: 0,
+        streak: 0,
+        bestStreak: 0,
+        caught: 0,
+        perfects: 0,
+        snack: 0,           // Squeektoshi's in-game snack meter, 0..100
+        snacksFed: 0,
+        dropsRound: 0,
+        passesRound: 0,
+        cheese: null,       // { el, y, x, golden }
+        spawnDelay: 0,      // small beat before the first drop of a round
+        rotorDeg: 0
+      };
+      // The loop's connective tissue: live wheel passes, banked by the chute.
+      var wheel = {
+        passes: 0,          // total wheel passes since the page opened (fractional internally)
+        charge: 0,          // passes banked toward the next drop
+        lastEffectKey: ""
+      };
+
+      function stageH() { return stage.clientHeight; }
+      function zoneRect() {
+        // Zone geometry in stage coordinates.
+        var h = stageH();
+        return { top: h - 64 - 74, bottom: h - 64, center: h - 64 - 37 };
+      }
+
+      function spawnCheese() {
+        var mode = modeFor(feed.rpm);
+        var golden = mode === "zoom";
+        wheel.charge -= dropCost(mode);
+        if (wheel.charge < 0) wheel.charge = 0;
+        game.dropsRound += 1;
+
+        var el = document.createElement("div");
+        el.className = "cheese" + (golden ? " golden" : "");
+        el.innerHTML = cheeseSVG(58, golden);
+        var jitter = (Math.random() * 56 - 28);
+        el.style.left = "calc(50% + " + jitter.toFixed(0) + "px)";
+        el.style.top = "30px";
+        stage.appendChild(el);
+        game.cheese = { el: el, y: 30, x: jitter, spin: (Math.random() * 14 - 7), golden: golden };
+
+        // Make the tie to the wheel visible: chute dips, pass counter pulses, note names the pass.
+        chute.classList.remove("drop");
+        void chute.offsetWidth;
+        chute.classList.add("drop");
+        passNum.classList.remove("pulse");
+        void passNum.offsetWidth;
+        passNum.classList.add("pulse");
+        var note = document.createElement("div");
+        note.className = "drop-note";
+        note.textContent = feed.practice
+          ? "Dropped by simulated pass #" + Math.floor(wheel.passes).toLocaleString("en-US")
+          : "Dropped by wheel pass #" + Math.floor(wheel.passes).toLocaleString("en-US");
+        fx.appendChild(note);
+        setTimeout(function () { note.remove(); }, 1050);
+        sndDrop();
+      }
+
+      function removeCheese() {
+        if (game.cheese) {
+          game.cheese.el.remove();
+          game.cheese = null;
+        }
+      }
+
+      function floater(text, cls, xPct) {
+        var f = document.createElement("div");
+        f.className = "floater" + (cls ? " " + cls : "");
+        f.textContent = text;
+        f.style.left = "calc(" + (xPct || 50) + "% - 30px)";
+        f.style.top = (zoneRect().top - 16) + "px";
+        fx.appendChild(f);
+        setTimeout(function () { f.remove(); }, 900);
+      }
+
+      function splat(y) {
+        var s = document.createElement("div");
+        s.className = "splat";
+        s.innerHTML = SPLAT_SVG;
+        s.style.left = "50%";
+        s.style.top = Math.min(y, stageH() - 24) + "px";
+        fx.appendChild(s);
+        setTimeout(function () { s.remove(); }, 650);
+      }
+
+      function flash(kind) {
+        stage.classList.remove("flash-good", "flash-bad", "shake");
+        void stage.offsetWidth;
+        stage.classList.add(kind === "good" ? "flash-good" : "flash-bad");
+        if (kind === "bad") stage.classList.add("shake");
+      }
+
+      /* ---------- Closing the loop: cheese → Squeektoshi → snack meter ---------- */
+      function snackWord() {
+        var s = game.snack;
+        if (s <= 0) return "Waiting for snacks";
+        if (s < 35) return "Warming up";
+        if (s < 70) return "Nicely fed";
+        if (s < 100) return "Almost stuffed";
+        return "Fully fed!";
+      }
+      function updateSnackUI(bumpKind) {
+        snackFill.style.width = game.snack + "%";
+        snackState.textContent = snackWord() + " · " + Math.round(game.snack) + "%";
+        // The hamster himself changes as the meter fills: cheek pouch grows, smile fades in.
+        var m = game.snack / 100;
+        cheek.setAttribute("rx", (1.6 + m * 4.6).toFixed(2));
+        cheek.setAttribute("ry", (1.2 + m * 3.4).toFixed(2));
+        smile.setAttribute("opacity", m.toFixed(2));
+        if (bumpKind) {
+          snackBar.classList.remove("bump", "dent");
+          void snackBar.offsetWidth;
+          snackBar.classList.add(bumpKind);
+        }
+      }
+
+      function feedSqueektoshi(golden) {
+        game.snacksFed += 1;
+        game.snack = Math.min(100, game.snack + (golden ? 18 : 10));
+        if (reduceMotion) {
+          updateSnackUI("bump");
+          munch();
+          return;
+        }
+        // A wedge visibly flies from the basket up to Squeektoshi in the panel.
+        var b = basket.getBoundingClientRect();
+        var w = wheelSvg.getBoundingClientRect();
+        var fly = document.createElement("div");
+        fly.className = "fly-cheese";
+        fly.innerHTML = cheeseSVG(36, golden);
+        fly.style.left = (b.left + b.width / 2 - 18) + "px";
+        fly.style.top = (b.top - 6) + "px";
+        document.body.appendChild(fly);
+        var dx = (w.left + w.width * 0.52) - (b.left + b.width / 2);
+        var dy = (w.top + w.height * 0.68) - b.top;
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            fly.style.transform = "translate(" + dx.toFixed(0) + "px," + dy.toFixed(0) + "px) scale(0.3) rotate(40deg)";
+            fly.style.opacity = "0.4";
+          });
+        });
+        setTimeout(function () {
+          fly.remove();
+          updateSnackUI("bump");
+          munch();
+        }, 580);
+      }
+
+      function munch() {
+        wheelSvg.classList.remove("munch");
+        void wheelSvg.getBoundingClientRect;
+        wheelSvg.classList.add("munch");
+      }
+
+      function loseSnack() {
+        game.snack = Math.max(0, game.snack - METER_LOSS);
+        updateSnackUI("dent");
+      }
+
+      function doCatch() {
+        if (!game.playing) return;
+        var c = game.cheese;
+        if (!c) return; // tapped air between drops: no penalty, keep the rhythm
+        var z = zoneRect();
+        var cheeseBottom = c.y + 50;
+        var cheeseCenter = c.y + 25;
+        if (cheeseBottom >= z.top && cheeseCenter <= z.bottom + 26) {
+          var dist = Math.abs(cheeseCenter - z.center);
+          var perfect = dist <= 13;
+          var base = 10 + Math.floor(feed.rpm / 4);
+          if (c.golden) base *= 2;
+          var pts = perfect ? base * 2 : base;
+          game.score += pts;
+          game.caught += 1;
+          if (perfect) game.perfects += 1;
+          game.streak += 1;
+          game.bestStreak = Math.max(game.bestStreak, game.streak);
+          var label = perfect
+            ? "PERFECT +" + pts
+            : c.golden
+              ? "GOLDEN +" + pts
+              : "+" + pts;
+          floater(label, perfect ? "perfect" : c.golden ? "golden" : "", 50 + c.x / 4);
+          flash("good");
+          sndCatch(perfect, c.golden);
+          removeCheese();
+          feedSqueektoshi(c.golden);
+        } else if (cheeseBottom < z.top) {
+          // Swung too early: the wedge shatters on the chute wall and the snack is lost.
+          game.streak = 0;
+          floater("TOO EARLY!", "miss", 50 + c.x / 4);
+          flash("bad");
+          sndMiss();
+          removeCheese();
+          loseSnack();
+        }
+        // If it already passed the zone, the tap is too late — the floor decides.
+        updateHud();
+      }
+
+      function cheeseMissed() {
+        var c = game.cheese;
+        if (!c) return;
+        splat(c.y + 44);
+        game.streak = 0;
+        floater("MISSED", "miss", 50 + c.x / 4);
+        flash("bad");
+        sndMiss();
+        removeCheese();
+        loseSnack();
+        updateHud();
+      }
+
+      function updateHud() {
+        scoreEl.textContent = game.score;
+        streakEl.textContent = game.streak >= 2 ? "×" + game.streak : "—";
+        timeEl.textContent = Math.max(0, game.timeLeft).toFixed(1);
+        var pct = Math.max(0, (game.timeLeft / ROUND_SECONDS) * 100);
+        timerfill.style.width = pct + "%";
+        timerbar.classList.toggle("low", game.timeLeft <= 10 && game.playing);
+      }
+
+      function startRound() {
+        removeCheese();
+        fx.innerHTML = "";
+        game.playing = true;
+        game.timeLeft = ROUND_SECONDS;
+        game.score = 0;
+        game.streak = 0;
+        game.bestStreak = 0;
+        game.caught = 0;
+        game.perfects = 0;
+        game.snack = 0;
+        game.snacksFed = 0;
+        game.dropsRound = 0;
+        game.passesRound = 0;
+        game.spawnDelay = 0.4;
+        // The chute starts charged by the live wheel, so the first drop comes fast.
+        wheel.charge = Math.max(wheel.charge, dropCost(modeFor(feed.rpm)));
+        startOverlay.hidden = true;
+        endOverlay.hidden = true;
+        catchBtn.disabled = false;
+        updateSnackUI();
+        updateHud();
+      }
+
+      function endRound() {
+        game.playing = false;
+        removeCheese();
+        catchBtn.disabled = true;
+        document.getElementById("finalScore").textContent = game.score;
+        document.getElementById("finalCaught").textContent = game.caught;
+        document.getElementById("finalPerfect").textContent = game.perfects;
+        document.getElementById("finalStreak").textContent = game.bestStreak;
+        document.getElementById("finalLoop").textContent =
+          "The wheel banked " + Math.floor(game.passesRound) + " passes this round and powered " +
+          game.dropsRound + " drops · Squeektoshi got " + game.snacksFed +
+          " snacks · snack meter finished at " + Math.round(game.snack) + "% (in-game).";
+        var note;
+        if (game.caught === 0) note = "The hamster thanks you for the free cheese rain.";
+        else if (game.snack >= 100) note = "A fully fed Squeektoshi. The wheel fears you — in the game, anyway.";
+        else if (game.perfects >= 5) note = "Basket hands of a champion. The wheel fears you.";
+        else if (game.caught >= 15) note = "A serious haul — imagine doing that during full zoomies.";
+        else note = "Solid catching. The next nap window is your friend.";
+        document.getElementById("finalNote").textContent = note;
+        endOverlay.hidden = false;
+        updateHud();
+      }
+
+      /* ---------- Panel (updated every frame from the smoothed live RPM) ---------- */
+      function updatePanel(mode) {
+        var meta = MODE_META[mode];
+        rpmNum.textContent = Math.round(feed.rpm);
+        practiceChip.hidden = !feed.practice;
+        passSim.hidden = !feed.practice;
+        passNum.textContent = Math.floor(wheel.passes).toLocaleString("en-US");
+
+        var status;
+        if (feed.practice) status = "Simulated wheel";
+        else if (feed.coreStatus) status = feed.coreStatus;
+        else if (!feed.ok) status = "Connecting…";
+        else if (!feed.fresh) status = "Stopped (feed stale)";
+        else if (mode === "nap") status = "Stopped";
+        else if (mode === "jog") status = "Turning";
+        else status = "Spinning fast";
+        if (wheelStatusEl.textContent !== status) wheelStatusEl.textContent = status;
+
+        var modeText = meta.label + (feed.practice ? " (practice)" : "");
+        if (modeLabelEl.textContent !== modeText) {
+          modeLabelEl.textContent = modeText;
+          modeLabelEl.className = meta.cls;
+        }
+
+        var cost = dropCost(mode);
+        chargeFill.style.width = Math.min(100, (wheel.charge / cost) * 100) + "%";
+        chargeLabel.textContent = mode === "nap"
+          ? "Next drop · trickling on stored chute power"
+          : "Next drop · charged by wheel passes";
+
+        var key = mode + "|" + (feed.practice ? "practice" : "live");
+        if (wheel.lastEffectKey !== key) {
+          wheel.lastEffectKey = key;
+          effectLine.innerHTML =
+            (feed.practice ? "<strong>Practice pace (simulated — not live):</strong> " : "") +
+            effectText(mode);
+        }
+      }
+
+      /* ---------- Main loop ---------- */
+      var lastTs = null;
+      function loop(ts) {
+        if (lastTs === null) lastTs = ts;
+        var dt = Math.min(0.05, (ts - lastTs) / 1000);
+        lastTs = ts;
+
+        // Feed → smoothed RPM
+        if (feed.practice) {
+          feed.practiceT += dt;
+          feed.rpmTarget = practiceRpm(feed.practiceT);
+        }
+        feed.rpm += (feed.rpmTarget - feed.rpm) * Math.min(1, dt * 1.6);
+        if (feed.rpm < 0.05 && feed.rpmTarget === 0) feed.rpm = 0;
+        var mode = modeFor(feed.rpm);
+
+        // The wheel turns → passes bank up. Passes are real revolutions of the
+        // live wheel (integrated RPM), and they are what the chute spends on drops.
+        var newPasses = (feed.rpm * dt) / 60;
+        wheel.passes += newPasses;
+        wheel.charge += newPasses;
+        if (mode === "nap") {
+          // Wheel stopped: no passes. The chute trickles on stored power instead.
+          wheel.charge += dt / NAP_TRICKLE_SECONDS;
+        }
+        var cost = dropCost(mode);
+        if (wheel.charge > cost) wheel.charge = cost; // the chute can only hold one drop's charge
+        if (game.playing) game.passesRound += newPasses;
+
+        // Wheel + hamster visuals
+        game.rotorDeg = (game.rotorDeg + feed.rpm * 6 * dt) % 360;
+        rotor.style.transform = "rotate(" + game.rotorDeg.toFixed(1) + "deg)";
+        var sleeping = mode === "nap";
+        zzz.setAttribute("opacity", sleeping ? "1" : "0");
+        hamster.style.display = sleeping ? "none" : "";
+        hamsterNap.style.display = sleeping ? "" : "none";
+        speedMarks.setAttribute("opacity", mode === "zoom" ? "0.7" : "0");
+        hamster.style.transform = sleeping
+          ? ""
+          : "translateY(" + (Math.sin(ts / (mode === "zoom" ? 45 : 90)) * Math.min(2.5, feed.rpm / 18)).toFixed(2) + "px)";
+        stageWheel.style.transform = "rotate(" + (game.rotorDeg * 0.6).toFixed(1) + "deg)";
+        speedLines.style.opacity = feed.rpm > 45 ? String(Math.min(0.8, (feed.rpm - 45) / 70)) : "0";
+
+        updatePanel(mode);
+
+        // Game: drops happen only when the chute has banked enough wheel passes.
+        if (game.playing) {
+          game.timeLeft -= dt;
+          if (game.timeLeft <= 0) {
+            game.timeLeft = 0;
+            endRound();
+          } else {
+            if (game.cheese) {
+              var c = game.cheese;
+              c.y += fallSpeed(feed.rpm) * dt;
+              c.el.style.top = c.y + "px";
+              c.el.style.transform = "rotate(" + (Math.sin(c.y / 60) * c.spin).toFixed(1) + "deg)";
+              if (c.y > stageH() - 30) cheeseMissed();
+            } else if (game.spawnDelay > 0) {
+              game.spawnDelay -= dt;
+            } else if (wheel.charge >= cost) {
+              spawnCheese();
+            }
+            updateHud();
+          }
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+
+      /* ---------- Input: one button, many doors ---------- */
+      stage.addEventListener("pointerdown", function (e) {
+        if (e.target.closest(".overlay")) return;
+        doCatch();
+      });
+      catchBtn.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        doCatch();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.code === "Space" && !e.repeat) {
+          var tag = (e.target && e.target.tagName) || "";
+          if (tag !== "BUTTON") e.preventDefault();
+          doCatch();
+        }
+      });
+      startBtn.addEventListener("click", startRound);
+      againBtn.addEventListener("click", startRound);
+    </script>
+  </body>
+</html>
