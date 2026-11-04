@@ -31,8 +31,3 @@ Feeding Squeektoshi is in-game only and does not affect the real hamster.
 ## How to run
 
 No backend, no build step, and no installation are needed. Open index.html in a browser, or serve it from any static host, including GitHub Pages. The game fetches the public Squeekchain API directly from the browser.
-
-## Files
-
-- index.html — the complete game (HTML, CSS, and JavaScript in one file)
-- README.md — this file
