@@ -1,3 +1,5 @@
+squeekchain-project: 23ab738a-50e9-499e-8f79-5090a9231c09
+
 # Catch the Cheese
 
 A one-button, 60-second game powered by Squeekchain's live hamster wheel.
